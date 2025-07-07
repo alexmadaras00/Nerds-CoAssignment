@@ -15,6 +15,5 @@ public class JwtResponseDto {
         this.accessToken = accessToken;
     }
 
-    // Getters and Setters
 }
 

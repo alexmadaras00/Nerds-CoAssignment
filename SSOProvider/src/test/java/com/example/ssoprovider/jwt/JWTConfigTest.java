@@ -1,47 +1,55 @@
 package com.example.ssoprovider.jwt;
 
-import io.jsonwebtoken.JwtException;
+import com.example.ssoprovider.model.User;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.crypto.SecretKey;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class JWTConfigTest {
 
     private SecretKey secretKey;
     private JWTConfig jwtConfig;
-    private UserDetails userDetails;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
-        secretKey = io.jsonwebtoken.security.Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
+        secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         jwtConfig = new JWTConfig(secretKey);
-        userDetails = mock(UserDetails.class);
 
+        testUser = new User();
+        testUser.setUserId("user-123");
+        testUser.setEmail("testuser@example.com");
+        testUser.setPassword("securepass");
+        testUser.setFullName("Test User");
+        testUser.setBirthDate(LocalDate.of(1990, 1, 1));
+        testUser.setIsActive(true);
     }
 
     @Test
     void generateTokenShouldReturnValidToken() {
-        String token = jwtConfig.generateToken(userDetails);
+        String token = jwtConfig.generateToken(testUser);
         assertNotNull(token);
         assertFalse(token.isEmpty());
     }
 
     @Test
-    void extractUsernameShouldReturnSubject() {
-        String token = jwtConfig.generateToken(userDetails);
-        String username = jwtConfig.extractUsername(token, secretKey);
-        assertEquals(userDetails.getUsername(), username);
+    void extractUsernameShouldReturnCorrectEmail() {
+        String token = jwtConfig.generateToken(testUser);
+        String mail = jwtConfig.extractUsername(token, secretKey);
+        assertEquals(testUser.getEmail(), mail);
     }
 
     @Test
     void isTokenValidShouldReturnTrueForValidToken() {
-        String token = jwtConfig.generateToken(userDetails);
+        String token = jwtConfig.generateToken(testUser);
         assertTrue(jwtConfig.isTokenValid(token, secretKey));
     }
 
@@ -53,22 +61,29 @@ class JWTConfigTest {
 
     @Test
     void isTokenValidShouldReturnFalseForExpiredToken() throws InterruptedException {
-        // Create a token with very short expiration
-        JWTConfig shortExpConfig = new JWTConfig(secretKey) {
+        // Create a config with token expiring in 1ms
+        JWTConfig shortLivedConfig = new JWTConfig(secretKey) {
             @Override
-            public String generateToken(UserDetails userDetails) {
-                return io.jsonwebtoken.Jwts.builder()
-                        .setSubject(userDetails.getUsername())
+            public String generateToken(User user) {
+                return Jwts.builder()
+                        .setSubject(user.getEmail())
                         .setIssuedAt(new java.util.Date())
-                        .setExpiration(new java.util.Date(System.currentTimeMillis() + 10)) // 10 ms expiration
-                        .signWith(secretKey, io.jsonwebtoken.SignatureAlgorithm.HS256)
+                        .setExpiration(new java.util.Date(System.currentTimeMillis() + 1)) // 1ms expiry
+                        .signWith(secretKey, SignatureAlgorithm.HS256)
                         .compact();
             }
         };
 
-        String token = shortExpConfig.generateToken(userDetails);
-        Thread.sleep(20); // Wait until token expires
+        String token = shortLivedConfig.generateToken(testUser);
+        Thread.sleep(10); // Let token expire
+        assertFalse(shortLivedConfig.isTokenValid(token, secretKey));
+    }
 
-        assertFalse(shortExpConfig.isTokenValid(token, secretKey));
+    @Test
+    void extractUsernameShouldThrowForAlteredToken() {
+        String token = jwtConfig.generateToken(testUser);
+        // Alter token by removing part
+        String tamperedToken = token.substring(0, token.length() - 10);
+        assertThrows(Exception.class, () -> jwtConfig.extractUsername(tamperedToken, secretKey));
     }
 }

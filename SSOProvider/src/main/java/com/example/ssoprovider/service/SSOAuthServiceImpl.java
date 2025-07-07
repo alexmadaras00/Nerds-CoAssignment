@@ -30,15 +30,25 @@ public class SSOAuthServiceImpl implements SSOAuthService {
     @Autowired
     JWTConfig jwtConfig;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public SSOAuthServiceImpl(SSOAuthRepository userRepository, JWTConfig jwtConfig, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtConfig = jwtConfig;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public UserResponseDto register(UserRegisterDto userRegistering) {
         User user = new User();
         user.setFullName(userRegistering.getFullName());
         user.setEmail(userRegistering.getEmail());
+        if (userRegistering.getDateOfBirth() == null) {
+            throw new IllegalArgumentException("Date of birth cannot be null");
+        }
         user.setBirthDate(userRegistering.getDateOfBirth().toLocalDate());
-        user.setPassword(userRegistering.getPassword());
+
         user.setPassword(passwordEncoder.encode(userRegistering.getPassword()));
         User savedUser = userRepository.save(user);
         UserResponseDto response = new UserResponseDto();
@@ -48,6 +58,9 @@ public class SSOAuthServiceImpl implements SSOAuthService {
         response.setId(savedUser.getUserId());
         response.setEmail(savedUser.getEmail());
         response.setToken(token);
+        response.setSuccess(true);
+        response.setMessage("User registered successfully!");
+
         return response;
     }
 
@@ -56,6 +69,7 @@ public class SSOAuthServiceImpl implements SSOAuthService {
         UserResponseDto responseDto = new UserResponseDto();
 
         Optional<User> optionalUser = userRepository.findByEmail(userLogin.getEmail());
+        System.out.println("Finding user by email: '" + userLogin.getEmail() + "'");
 
         if (optionalUser.isEmpty()) {
             responseDto.setSuccess(false);
@@ -64,13 +78,13 @@ public class SSOAuthServiceImpl implements SSOAuthService {
         }
 
         User user = optionalUser.get();
-        String token = jwtConfig.generateToken(user);
+
         if (!passwordEncoder.matches(userLogin.getPassword(), user.getPassword())) {
             responseDto.setSuccess(false);
             responseDto.setMessage("Invalid credentials");
             return responseDto;
         }
-
+        String token = jwtConfig.generateToken(user);
         responseDto.setId(user.getUserId());
         responseDto.setEmail(user.getEmail());
         responseDto.setSuccess(true);

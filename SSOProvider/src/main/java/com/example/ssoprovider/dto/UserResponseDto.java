@@ -12,4 +12,10 @@ public class UserResponseDto {
     private String id;
     private String email;
 
+    public UserResponseDto() {}
+    public UserResponseDto(boolean success, String mail, String token) {
+        this.success = success;
+        this.email = mail;
+        this.token = token;
+    }
 }
