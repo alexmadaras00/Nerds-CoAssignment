@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Nerds&amp;CoAssigment.iml" filepath="$PROJECT_DIR$/.idea/Nerds&amp;CoAssigment.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/POCApplication.main.iml" filepath="$PROJECT_DIR$/.idea/modules/POCApplication.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SSOProvider.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SSOProvider.main.iml" />
     </modules>
   </component>
 </project>
