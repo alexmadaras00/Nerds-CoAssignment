@@ -23,7 +23,7 @@ public class JWTConfig {
 
     public String generateToken(UserDetails userDetails){
         return Jwts.builder()
-                .setSubject("auth_sso")
+                .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(jwtSecretKey,SignatureAlgorithm.HS256)
