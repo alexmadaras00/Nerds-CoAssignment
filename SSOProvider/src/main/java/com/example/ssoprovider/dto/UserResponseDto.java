@@ -6,7 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserResponseDto {
-    private Long id;
+    private boolean success;
+    private String message;
+    private String token;
+    private String id;
     private String email;
-    private String password;
+
 }

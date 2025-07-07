@@ -1,5 +1,6 @@
 package com.example.ssoprovider.dto;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,16 +11,14 @@ public class UserResponseDtoTest {
     void testSettersAndGetters() {
         UserResponseDto dto = new UserResponseDto();
 
-        Long id = 123L;
+        String id = "user9991234";
         String email = "user@example.com";
-        String password = "password";
 
         dto.setId(id);
         dto.setEmail(email);
-        dto.setPassword(password);
 
-        assertEquals(id, dto.getId());
-        assertEquals(email, dto.getEmail());
-        assertEquals(password, dto.getPassword());
+
+        Assertions.assertEquals(id, dto.getId());
+        Assertions.assertEquals(email, dto.getEmail());
     }
 }

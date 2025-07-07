@@ -1,5 +1,6 @@
 package com.example.ssoprovider.jwt;
 
+import com.example.ssoprovider.model.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,9 @@ public class JWTConfig {
         this.jwtSecretKey = jwtSecretKey;
     }
 
-    public String generateToken(UserDetails userDetails){
+    public String generateToken(User user){
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(jwtSecretKey,SignatureAlgorithm.HS256)
