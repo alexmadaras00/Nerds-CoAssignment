@@ -81,8 +81,8 @@ public class SSOAuthServiceImpl implements SSOAuthService {
 
 
     @Override
-    public UserResponseDto changePassword(String userId, ChangePasswordDto changePasswordDto) {
-        Optional<User> optionalUser = userRepository.findById(userId);
+    public UserResponseDto changePassword(String email, ChangePasswordDto changePasswordDto) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         UserResponseDto response = new UserResponseDto();
 
         if (optionalUser.isEmpty()) {
